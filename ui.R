@@ -38,7 +38,10 @@ shinyUI(
                textAreaInput("col_vars", "Choose variables in columns", "", width = "230px", height = "50px"),
                textAreaInput("row_vars", "Choose variables in rows", "", width = "230px", height = "50px"),
                checkboxInput('normalize', 'Normalize response?', TRUE),
-               checkboxInput('log_data', 'Log transform response?', TRUE)
+               checkboxInput('log_data', 'Log transform response?', TRUE),
+               
+               br(),
+               actionButton("update", "Update plot")
              )
       ),
       

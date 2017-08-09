@@ -11,8 +11,9 @@ shinyServer(function(input, output) {
   
   #################### setup ####################
   
-  get_col_vars <- reactive({rev(strsplit(input$col_vars, ",")[[1]])})
+  get_col_vars <- reactive({col_vars = rev(strsplit(input$col_vars, ",")[[1]])})
   get_row_vars <- reactive({rev(strsplit(input$row_vars, ",")[[1]])})
+  
   get_normalize <- reactive({input$normalize})
   get_log_data <- reactive({input$log_data})
   get_cex_col <- reactive({as.numeric(strsplit(input$cex_col, ",")[[1]])})
@@ -24,47 +25,74 @@ shinyServer(function(input, output) {
   get_var_label_size <- reactive({as.numeric(input$var_label_size)})
   get_color <- reactive({input$color})
   
-  # get data function
-  get_data <- reactive({
-    
-    ifelse(is.null(input$data_mat_file), data_mat_file <- "experiment_variables.csv", data_mat_file <- input$data_mat_file)
-    ifelse(is.null(input$response_file), response_file <- "SEAP.csv", response_file <- input$response_file)
-    
-    return_list = load_library_data(data_mat_file = data_mat_file, response_file = response_file)
-    data_mat = return_list[[1]]
-    response = return_list[[2]]
-    
-    list(data_mat, response)
+  # get data functions
+  get_data_mat_file <- reactive({
+    ifelse(is.null(input$data_mat_file), data_mat_file <- "experiment_variables.csv", data_mat_file <- input$data_mat_file$datapath)
+  })
+  get_response_file <- reactive({
+    ifelse(is.null(input$response_file), response_file <- "SEAP.csv", response_file <- input$response_file$datapath)
   })
   
+  get_update <- reactive({input$update})
+  get_data <- reactive({load_library_data(data_mat_file = get_data_mat_file(), response_file = get_response_file())})
+  
+  #################### get all ####################
+  get_all <- reactive({
+    if (get_update() == 0) {
+      return_list = NA
+    } else {
+      # only output file when button is pressed (I don't get this logic)
+      isolate({
+        list(
+          data_mat = get_data()[[1]], 
+          response = get_data()[[2]], 
+          row_vars = get_row_vars(), 
+          col_vars = get_col_vars(), 
+          normalize = get_normalize(), 
+          log_data = get_log_data(), 
+          cex_col = get_cex_col(), 
+          cex_row = get_cex_row(), 
+          selected_color = get_color(), 
+          bubble_size_rescale = get_bubble_size_rescale(), 
+          var_label_size = get_var_label_size()
+        )
+      })
+    }
+  })
   #################### plotting ####################
+  
   
   # this function makes the plots
   make_plot <- function() {
-    return_list = get_data()
-    data_mat = return_list[[1]]
-    response = return_list[[2]]
-    
-    make_dimensional_stacking(data_mat = data_mat, 
-                              response = response, 
-                              row_vars = get_row_vars(), 
-                              col_vars = get_col_vars(), 
-                              normalize = get_normalize(), 
-                              log_data = get_log_data(), 
-                              cex_col = get_cex_col(), 
-                              cex_row = get_cex_row(), 
-                              selected_color = get_color(), 
-                              bubble_size_rescale = get_bubble_size_rescale(), 
-                              var_label_size = get_var_label_size())
+    return_list = get_all()
+    if (identical(NA, return_list)) {return()}
+
+    do.call(make_dimensional_stacking, return_list)
+    # make_dimensional_stacking(data_mat = data_mat, 
+    #                           response = response, 
+    #                           row_vars = get_row_vars(), 
+    #                           col_vars = get_col_vars(), 
+    #                           normalize = get_normalize(), 
+    #                           log_data = get_log_data(), 
+    #                           cex_col = get_cex_col(), 
+    #                           cex_row = get_cex_row(), 
+    #                           selected_color = get_color(), 
+    #                           bubble_size_rescale = get_bubble_size_rescale(), 
+    #                           var_label_size = get_var_label_size())
   }
   
   make_legend <- function() {
-    return_list = get_data()
-    data_mat = return_list[[1]]
-    response = return_list[[2]]
+    return_list = get_all()
+    if (identical(NA, return_list)) {return()}
+    data_mat = return_list$data_mat
+    response = return_list$response
+    col_vars = return_list$col_vars
+    row_vars = return_list$row_vars
+    bubble_size_rescale = return_list$bubble_size_rescale
+    selected_color = return_list$selected_color
     
     # get dimension of bubble plot
-    return_list = formatting(data_mat, response, get_col_vars(), get_row_vars())
+    return_list = formatting(data_mat, response, col_vars, row_vars)
     num_col = ncol(return_list[[1]])
     num_row = nrow(return_list[[1]])
     
@@ -75,7 +103,7 @@ shinyServer(function(input, output) {
     par(mar = c(4,7,6,2))
     par(xpd = NA)
     
-    bubble_chart(plot_storage, plot_storage * get_bubble_size_rescale(), selected_color = get_color(), bty = "n")
+    bubble_chart(plot_storage, plot_storage * bubble_size_rescale, selected_color = selected_color, bty = "n")
     text(c(1, 11), y = rep(nrow(plot_storage) - 2, 2), labels = c(min(response), max(response)), cex = 1)
     text(6.5, nrow(plot_storage) + 2, labels = get_legend_title(), cex = 1.5, adj = c(0.5, 0.5))
   }

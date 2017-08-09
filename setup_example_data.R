@@ -17,7 +17,6 @@ switch_value <- function(full_vector, orig_value, new_value) {
 data_mat[,"Lipid"] = switch_value(data_mat[,"Lipid"], "100% DOPC", "100%")
 data_mat[,"Lipid"] = switch_value(data_mat[,"Lipid"], "80:20 DOPC:DOPE", "80%")
 data_mat[,"OligoDensity"] = switch_value(data_mat[,"OligoDensity"], "Very High", "VHigh")
-return(data_mat)
 
 write.csv(data_mat, file = "experiment_variables.csv", row.names = F, quote = F)
 
