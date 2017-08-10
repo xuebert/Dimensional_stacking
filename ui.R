@@ -1,16 +1,15 @@
-# rm(list=ls())
+rm(list=ls())
 
 library(shiny)
 library(gridExtra)
 
 shinyUI(
   fluidPage(
-    titlePanel("Dimension stacking application"),
+    titlePanel("Dimensional stacking application"),
     
     fluidRow(
       ####################################################
       column(4, 
-             # sidebarLayout(
              
              # load data
              wellPanel(
@@ -22,6 +21,7 @@ shinyUI(
                br(),
                br(),
                selectInput("outfile_format", label = "Figure format", choices = list("pdf" = 1, "png" = 2, "jpg" = 3, "bmp" = 4), selected = 1),
+               
                actionButton("graph_output", label = "Make figure file")
              )
       ),
@@ -32,15 +32,16 @@ shinyUI(
              wellPanel(
                titlePanel("Plotting parameters"),
                
-               textInput("w", "width (in)", value = "10", placeholder = "10"),
-               textInput("h", "height (in)", value = "5", placeholder = "5"),
+               sliderInput("width", label = "Width (in)", min=3, max=20, value=10, ticks=F),
+               sliderInput("height", label = "Height (in)", min=3, max=20, value=5, ticks=F),
                
                textAreaInput("col_vars", "Choose variables in columns", "", width = "230px", height = "50px"),
                textAreaInput("row_vars", "Choose variables in rows", "", width = "230px", height = "50px"),
                checkboxInput('normalize', 'Normalize response?', TRUE),
-               checkboxInput('log_data', 'Log transform response?', TRUE),
+               checkboxInput('log_data', 'Log10 transform response?', FALSE),
                
                br(),
+               tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),
                actionButton("update", "Update plot")
              )
       ),
@@ -52,11 +53,11 @@ shinyUI(
                
                textInput("legend_title", label = "Legend title", value = "Legend title", placeholder = "Legend title"),
                
-               textInput("cex_col", label = "Column label sizes", value = "1,0.8,0.6,0.4", placeholder = "1,0.8,0.6,0.4"),
-               textInput("cex_row", label = "Row label sizes", value = "1,0.8,0.6,0.4", placeholder = "1,0.8,0.6,0.4"),
+               textInput("cex_col", label = "Column label sizes", value = "", placeholder = ""),
+               textInput("cex_row", label = "Row label sizes", value = "", placeholder = ""),
                
-               textInput("bubble_size_rescale", label = "Bubble size scaling factor", value = "1", placeholder = "1"),
-               textInput("var_label_size", label = "Variable label size", value = "1", placeholder = "1"),
+               numericInput("bubble_size_rescale", label = "Bubble size scaling factor", value = 1, min = 0, step = 0.05),
+               numericInput("var_label_size", label = "Variable label size", value = 1, min = 0, step = 0.05),
                selectInput("color", label = "Select color scale", choices = list("Red" = "red", "Blue" = "blue", "Green" = "green", "Orange" = "orange", "Purple" = "purple"), selected = "red")
              )
       )),

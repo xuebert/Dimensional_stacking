@@ -1,14 +1,14 @@
 formatting <- function(data_mat, response, col_vars, row_vars) {
   
   if (length(col_vars) == 0 & length(row_vars) == 0) {
-    col_vars = (floor(ncol(data_mat) / 2) + 1):ncol(data_mat)
-    row_vars = 1:floor(ncol(data_mat) / 2)
+    col_vars = ncol(data_mat):(floor(ncol(data_mat) / 2) + 1)
+    row_vars = floor(ncol(data_mat) / 2):1
   }
   if (length(col_vars) == 0) {
-    col_vars = (1:ncol(data_mat))[!(colnames(data_mat) %in% row_vars)]
+    col_vars = rev((1:ncol(data_mat))[!(colnames(data_mat) %in% row_vars)])
   }
   if (length(row_vars) == 0) {
-    row_vars = (1:ncol(data_mat))[!(colnames(data_mat) %in% col_vars)]
+    row_vars = rev((1:ncol(data_mat))[!(colnames(data_mat) %in% col_vars)])
   }
   
   # optimize ordering

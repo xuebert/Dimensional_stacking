@@ -2,10 +2,9 @@
 
 rm(list=ls())
 
-source("support_functions/load_library_data.R")
-source("support_functions/bubble_chart.R")
-source("support_functions/setup_color_scale.R")
+source("support_functions/load_data.R")
 source("support_functions/make_dimensional_stacking.R")
+source("support_functions/make_legend.R")
 
 shinyServer(function(input, output) {
   
@@ -20,8 +19,8 @@ shinyServer(function(input, output) {
   get_cex_row <- reactive({as.numeric(strsplit(input$cex_row, ",")[[1]])})
   get_bubble_size_rescale <- reactive({as.numeric(input$bubble_size_rescale)})
   get_legend_title <- reactive({input$legend_title})
-  get_w <- reactive({as.numeric(input$w)})
-  get_h <- reactive({as.numeric(input$h)})
+  get_width <- reactive({input$width})
+  get_height <- reactive({input$height})
   get_var_label_size <- reactive({as.numeric(input$var_label_size)})
   get_color <- reactive({input$color})
   
@@ -34,18 +33,21 @@ shinyServer(function(input, output) {
   })
   
   get_update <- reactive({input$update})
-  get_data <- reactive({load_library_data(data_mat_file = get_data_mat_file(), response_file = get_response_file())})
+  get_data <- reactive({load_data(data_mat_file = get_data_mat_file(), response_file = get_response_file())})
+  
+  get_outfile <- reactive({input$outfile})
   
   #################### get all ####################
+  # this is required to load all variables for plotting.  It is needed for the isolate command so that new plots are only generated when the update button is pressed
   get_all <- reactive({
-    if (get_update() == 0) {
+    if (get_update() == 0) { # don't execute plotting on startup, not until update button is pressed
       return_list = NA
     } else {
       # only output file when button is pressed (I don't get this logic)
       isolate({
         list(
-          data_mat = get_data()[[1]], 
-          response = get_data()[[2]], 
+          data_mat_file = get_data_mat_file(), 
+          response_file = get_response_file(), 
           row_vars = get_row_vars(), 
           col_vars = get_col_vars(), 
           normalize = get_normalize(), 
@@ -54,77 +56,72 @@ shinyServer(function(input, output) {
           cex_row = get_cex_row(), 
           selected_color = get_color(), 
           bubble_size_rescale = get_bubble_size_rescale(), 
-          var_label_size = get_var_label_size()
+          var_label_size = get_var_label_size(),
+          legend_title = get_legend_title(),
+          width = get_width(),
+          height = get_height()
         )
       })
     }
   })
   #################### plotting ####################
   
-  
   # this function makes the plots
-  make_plot <- function() {
+  master_dim_stack <- function() {
     return_list = get_all()
     if (identical(NA, return_list)) {return()}
-
+    
+    # remove irrelevant stuff
+    return_list$legend_title = NULL
+    return_list$width = NULL
+    return_list$height = NULL
     do.call(make_dimensional_stacking, return_list)
-    # make_dimensional_stacking(data_mat = data_mat, 
-    #                           response = response, 
-    #                           row_vars = get_row_vars(), 
-    #                           col_vars = get_col_vars(), 
-    #                           normalize = get_normalize(), 
-    #                           log_data = get_log_data(), 
-    #                           cex_col = get_cex_col(), 
-    #                           cex_row = get_cex_row(), 
-    #                           selected_color = get_color(), 
-    #                           bubble_size_rescale = get_bubble_size_rescale(), 
-    #                           var_label_size = get_var_label_size())
   }
   
-  make_legend <- function() {
+  master_legend <- function() {
     return_list = get_all()
     if (identical(NA, return_list)) {return()}
-    data_mat = return_list$data_mat
-    response = return_list$response
-    col_vars = return_list$col_vars
-    row_vars = return_list$row_vars
-    bubble_size_rescale = return_list$bubble_size_rescale
-    selected_color = return_list$selected_color
     
-    # get dimension of bubble plot
-    return_list = formatting(data_mat, response, col_vars, row_vars)
-    num_col = ncol(return_list[[1]])
-    num_row = nrow(return_list[[1]])
-    
-    plot_storage = matrix(c(seq(0.01, 1, by = 0.1), 1), ncol = 11)
-    plot_storage = rbind(plot_storage, matrix(rep(NA, 11 * (num_row - 1)), ncol = 11))
-    plot_storage = cbind(plot_storage, matrix(rep(NA, nrow(plot_storage) * (num_col - 11)), nrow = nrow(plot_storage)))
-    
-    par(mar = c(4,7,6,2))
-    par(xpd = NA)
-    
-    bubble_chart(plot_storage, plot_storage * bubble_size_rescale, selected_color = selected_color, bty = "n")
-    text(c(1, 11), y = rep(nrow(plot_storage) - 2, 2), labels = c(min(response), max(response)), cex = 1)
-    text(6.5, nrow(plot_storage) + 2, labels = get_legend_title(), cex = 1.5, adj = c(0.5, 0.5))
+    return_list$width = NULL
+    return_list$height = NULL
+    do.call(make_legend, list(list_args = return_list))
   }
   
-  output$plot.ui <- renderUI({plotOutput("plot", width = get_w() * 128, height = get_h() * 128)})
-  output$plot <- renderPlot({make_plot()}, res = 128)
-
-  output$legend.ui <- renderUI({plotOutput("legend", width = get_w() * 128, height = get_h() * 128)})
-  output$legend <- renderPlot({make_legend()}, res = 128)
+  # dim stack plot
+  output$plot.ui <- renderUI({
+    return_list = get_all()
+    if (identical(NA, return_list)) {return()}
+    width = return_list$width
+    height = return_list$height
+    plotOutput("plot", width = width * 128, height = height * 128)
+  })
+  output$plot <- renderPlot({master_dim_stack()}, res = 128)
+  
+  # legend plot
+  output$legend.ui <- renderUI({
+    return_list = get_all()
+    if (identical(NA, return_list)) {return()}
+    width = return_list$width
+    height = return_list$height
+    plotOutput("legend", width = width * 128, height = height * 128)
+  })
+  output$legend <- renderPlot({master_legend()}, res = 128)
   
   #################### table ####################
   # make output table
   output_table <- observe({
     if (input$table_output == 0) return()
+    return_list = get_all()
+    if (identical(NA, return_list)) {return()}
     
-    return_list = get_data()
-    bubble_colors = return_list[[1]]
-    bubble_sizes = return_list[[2]]
+    # get data_mat of bubble plot
+    return_list$return_formatted_data = T
+    return_list$legend_title = NULL # remove legend title
+    return_list$width = NULL
+    return_list$height = NULL
+    formatted_data = do.call(make_dimensional_stacking, return_list)
     
-    write.table(bubble_colors, file = paste(input$outfile, "_color_table.csv", sep = ""), sep = ",", quote = F, col.names = T)
-    write.table(bubble_sizes, file = paste(input$outfile, "_size_table.csv", sep = ""), sep = ",", quote = F, col.names = T)
+    write.table(formatted_data, file = paste(get_outfile(), ".csv", sep = ""), sep = ",", quote = F, col.names = T)
   })
   
   #################### output figure ####################
@@ -134,6 +131,12 @@ shinyServer(function(input, output) {
     
     # only output file when button is pressed (I don't get this logic)
     isolate({
+      # get width/height
+      return_list = get_all()
+      if (identical(NA, return_list)) {return()}
+      width = return_list$width
+      height = return_list$height
+      
       # store number form of outfile_format
       outfile_format = as.numeric(input$outfile_format)
       
@@ -144,15 +147,15 @@ shinyServer(function(input, output) {
       # pdf (single file with multi pages)
       if (outfile_format == 1) { 
         
-        pdf(paste(input$outfile, ".pdf", sep = ""), width = get_w(), height = get_h(), useDingbats = F)
-        make_plot()
-        make_legend()
+        pdf(paste(input$outfile, ".pdf", sep = ""), width = width, height = height, useDingbats = F)
+        master_dim_stack()
+        master_legend()
         dev.off()
         
       } else { # png jpg and bmp
         
-        figure_func(paste(input$outfile, ".", names(figure_func_list)[[as.numeric(input$outfile_format)]], sep = ""), width = get_w(), height = get_h(), units = "in", res = 300)
-        make_plot()
+        figure_func(paste(input$outfile, ".", names(figure_func_list)[[as.numeric(input$outfile_format)]], sep = ""), width = width, height = height, units = "in", res = 300)
+        master_dim_stack()
         dev.off()
       }
     })

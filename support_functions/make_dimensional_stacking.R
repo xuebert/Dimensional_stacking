@@ -1,11 +1,16 @@
-make_dimensional_stacking <- function(data_mat, response, row_vars = NULL, col_vars = NULL, bubble_size_rescale = 1, cex_col = character(0), cex_row = character(0), color_scale = NULL, lwd = 1, var_label_size = 0.8, selected_color = "red", normalize = T, log_data = T) {
+make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = NULL, col_vars = NULL, bubble_size_rescale = 1, cex_col = character(0), cex_row = character(0), color_scale = NULL, lwd = 1, var_label_size = 0.8, selected_color = "red", normalize = T, log_data = T, return_formatted_data = F) {
+  
+  source("support_functions/bubble_chart.R")
+  source("support_functions/formatting.R")
+  source("support_functions/load_data.R")
+  
+  return_list = load_data(data_mat_file, response_file)
+  data_mat = return_list[[1]]
+  response = return_list[[2]]
   
   # response changes
   if (log_data) {response[response > 0] = log10(response[response > 0] + 1)}
   if (normalize) {response = response / max(response)}
-  
-  source("support_functions/bubble_chart.R")
-  source("support_functions/formatting.R")
   
   # format bubble_color and bubble_size.  Also sets defaults for col_vars and row_vars if they weren't specified
   return_list = formatting(data_mat, response, col_vars, row_vars)
@@ -14,11 +19,11 @@ make_dimensional_stacking <- function(data_mat, response, row_vars = NULL, col_v
   col_vars = return_list[[3]]
   row_vars = return_list[[4]]
   
+  if (return_formatted_data) {return(bubble_color)}
+  
   # initialize null parameters
   if (length(cex_col)==0) {cex_col = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
   if (length(cex_row)==0) {cex_row = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
-  if (length(cex_col) == 0) {cex_col = c(1, 0.8, 0.7, 0.4)}
-  if (length(cex_row) == 0) {cex_row = c(1, 0.8, 0.7, 0.4)}
   
   var_names = colnames(data_mat)
   names(var_names) = var_names
