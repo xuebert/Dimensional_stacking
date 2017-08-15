@@ -2,7 +2,8 @@
 
 library(RColorBrewer)
 
-red = colorRampPalette(colors = c("white", "#FF7D7D", "red", "#CD000D", "#99000D", "black"))(100)
+# red = colorRampPalette(colors = c("white", "#FF7D7D", "red", "#CD000D", "#99000D", "black"))(100)
+red = colorRampPalette(brewer.pal(n = 7, name ="Reds"))(100)
 
 blue = colorRampPalette(colors = c("white", "blue", "black"))(100)
 green = colorRampPalette(colors = c("white", "green", "black"))(100)
