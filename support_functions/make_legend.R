@@ -3,6 +3,8 @@ make_legend <- function(list_args) {
   # get dimension of bubble plot
   list_args$return_formatted_data = T
   list_args$legend_title = NULL # remove legend title
+  list_args$width = NULL
+  list_args$height = NULL
   formatted_data = do.call(make_dimensional_stacking, list_args)
   num_col = ncol(formatted_data)
   num_row = nrow(formatted_data)

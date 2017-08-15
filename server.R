@@ -5,6 +5,7 @@ rm(list=ls())
 source("support_functions/load_data.R")
 source("support_functions/make_dimensional_stacking.R")
 source("support_functions/make_legend.R")
+source("support_functions/load_value_order.R")
 
 shinyServer(function(input, output, session) {
   
@@ -34,13 +35,9 @@ shinyServer(function(input, output, session) {
   get_value_order_file <- reactive({
     ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
   })
-  # get_value_order_file <- function() {
-  #   ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
-  #   return(value_order_file)
-  # }
   get_value_order <- reactive({
     read_value_order = reactiveFileReader(1000, session, get_value_order_file(), readLines)
-    read_value_order()
+    load_value_order(read_value_order())
   })
   
   get_update <- reactive({input$update})
@@ -51,8 +48,6 @@ shinyServer(function(input, output, session) {
   #################### get all ####################
   # this is required to load all variables for plotting.  It is needed for the isolate command so that new plots are only generated when the update button is pressed
   get_all <- reactive({
-    A = get_value_order()
-    browser()
     if (get_update() == 0) { # don't execute plotting on startup, not until update button is pressed
       return_list = NA
     } else {
@@ -63,6 +58,7 @@ shinyServer(function(input, output, session) {
           response_file = get_response_file(), 
           row_vars = get_row_vars(), 
           col_vars = get_col_vars(), 
+          value_order_obj = get_value_order(),
           normalize = get_normalize(), 
           log_data = get_log_data(), 
           cex_col = get_cex_col(), 
@@ -94,9 +90,6 @@ shinyServer(function(input, output, session) {
   master_legend <- function() {
     return_list = get_all()
     if (identical(NA, return_list)) {return()}
-    
-    return_list$width = NULL
-    return_list$height = NULL
     do.call(make_legend, list(list_args = return_list))
   }
   

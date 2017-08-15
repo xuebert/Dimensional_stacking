@@ -68,6 +68,7 @@ shinyUI(
       tabPanel("Plot",
                fluidRow(
                  column(10, uiOutput("plot.ui")),
+                 # column(10, imageOutput("plot")),
                  column(10, uiOutput("legend.ui"))
                ))
     )
