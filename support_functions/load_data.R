@@ -1,7 +1,7 @@
 load_data <- function(data_mat_file, response_file) {
   
   # read the file
-  data_mat = read.csv(data_mat_file, header = T)
+  data_mat = read.csv(data_mat_file, header = T, colClasses = "character")
   response = read.csv(response_file, header = T)
   
   # make response not an array

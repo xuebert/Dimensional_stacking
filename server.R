@@ -6,7 +6,7 @@ source("support_functions/load_data.R")
 source("support_functions/make_dimensional_stacking.R")
 source("support_functions/make_legend.R")
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   #################### setup ####################
   
@@ -31,15 +31,28 @@ shinyServer(function(input, output) {
   get_response_file <- reactive({
     ifelse(is.null(input$response_file), response_file <- "SEAP.csv", response_file <- input$response_file$datapath)
   })
+  get_value_order_file <- reactive({
+    ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
+  })
+  # get_value_order_file <- function() {
+  #   ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
+  #   return(value_order_file)
+  # }
+  get_value_order <- reactive({
+    read_value_order = reactiveFileReader(1000, session, get_value_order_file(), readLines)
+    read_value_order()
+  })
   
   get_update <- reactive({input$update})
-  get_data <- reactive({load_data(data_mat_file = get_data_mat_file(), response_file = get_response_file())})
+  get_data <- reactive({return_var = load_data(data_mat_file = get_data_mat_file(), response_file = get_response_file())})
   
   get_outfile <- reactive({input$outfile})
   
   #################### get all ####################
   # this is required to load all variables for plotting.  It is needed for the isolate command so that new plots are only generated when the update button is pressed
   get_all <- reactive({
+    A = get_value_order()
+    browser()
     if (get_update() == 0) { # don't execute plotting on startup, not until update button is pressed
       return_list = NA
     } else {

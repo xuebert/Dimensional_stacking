@@ -16,6 +16,7 @@ shinyUI(
                titlePanel("File inputs and outputs"),
                fileInput("data_mat_file", "Choose data file"),
                fileInput("response_file", "Choose response file"),
+               fileInput("value_order_file", "Choose value order file"),
                textInput("outfile", "Choose output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Make table file"),
                br(),
