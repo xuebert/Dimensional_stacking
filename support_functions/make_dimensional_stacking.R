@@ -14,12 +14,13 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   
   # format bubble_color and bubble_size.  Also sets defaults for col_vars and row_vars if they weren't specified
   return_list = formatting(data_mat, response, col_vars, row_vars, value_order_obj)
+  if (return_formatted_data) {return(return_list[[1]])}
   bubble_color = return_list[[1]]
   bubble_size = return_list[[2]]
   col_vars = return_list[[3]]
   row_vars = return_list[[4]]
-  
-  if (return_formatted_data) {return(bubble_color)}
+  grid_col = return_list[[5]]
+  grid_row = return_list[[6]]
   
   # initialize null parameters
   if (length(cex_col)==0) {cex_col = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
@@ -51,8 +52,7 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   p <- bubble_chart(bubble_colors = bubble_color, bubble_sizes = bubble_size * bubble_size_rescale, bty = "n", white_buffer = F, color_scale = color_scale, lwd = lwd, selected_color = selected_color)
   
   # get text placement
-  full_grid2 = expand.grid(lapply(col_vars, function(i) unique(data_mat[,i])))
-  get_placement <- function(labels = lapply(length(col_vars):1, function(i) unique(full_grid2[,i])), number_range = c(0, ncol(bubble_color))) {
+  get_placement <- function(labels, number_range = c(0, ncol(bubble_color))) {
     
     center_points = vector("list", length(labels))
     text_labels = vector("list", length(labels))
@@ -73,7 +73,7 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   ####################
   # make text
   # make column information
-  return_list = get_placement()
+  return_list = get_placement(rev(lapply(grid_col, unique)))
   text_values = return_list[[1]]
   coord_values = return_list[[2]]
   par(xpd = NA)
@@ -99,9 +99,8 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   }
   
   # make row information
-  full_grid1 = expand.grid(lapply(row_vars, function(i) unique(data_mat[,i])))
-  return_list = get_placement(labels = lapply(length(row_vars):1, function(i) unique(full_grid1[,i])), number_range = c(0,nrow(bubble_color)))
-  text_values = return_list[[1]]
+  return_list = get_placement(labels = rev(lapply(grid_row, unique)), number_range = c(0,nrow(bubble_color)))
+  text_values = lapply(return_list[[1]], rev) # reverse order for row
   coord_values = return_list[[2]]
   counter = 0
   for (n_level in length(return_list[[1]]):1) {

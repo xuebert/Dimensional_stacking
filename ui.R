@@ -1,5 +1,9 @@
 rm(list=ls())
 
+list.of.packages <- c("shiny", "gridExtra")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
 library(shiny)
 library(gridExtra)
 
@@ -16,13 +20,12 @@ shinyUI(
                titlePanel("File inputs and outputs"),
                fileInput("data_mat_file", "Choose data file"),
                fileInput("response_file", "Choose response file"),
-               fileInput("value_order_file", "Choose value order file"),
-               textInput("outfile", "Choose output file name", value = "example_output", placeholder = "example_output"),
+               checkboxInput('value_order_check', 'Specify value order?', FALSE),
+               conditionalPanel(
+                 condition = "input.value_order_check == true",
+                 fileInput("value_order_file", "Choose value order file")
+               ),
                actionButton("table_output", label = "Make table file"),
-               br(),
-               br(),
-               selectInput("outfile_format", label = "Figure format", choices = list("pdf" = 1, "png" = 2, "jpg" = 3, "bmp" = 4), selected = 1),
-               
                actionButton("graph_output", label = "Make figure file")
              )
       ),

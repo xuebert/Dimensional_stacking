@@ -1,5 +1,12 @@
 formatting <- function(data_mat, response, col_vars, row_vars, value_order_obj) {
   
+  if (is.null(value_order_obj)) {value_order_obj = lapply(data_mat, unique)}
+  
+  list.of.packages <- "prodlim"
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install.packages(new.packages)
+  library(prodlim)
+  
   var_names = colnames(data_mat)
   num_col = ncol(data_mat)
   
@@ -31,34 +38,23 @@ formatting <- function(data_mat, response, col_vars, row_vars, value_order_obj) 
   }
   
   # create storage
-  full_grid1 = expand.grid(lapply(row_vars, function(i) value_order[[i]]))
-  full_grid2 = expand.grid(lapply(col_vars, function(i) value_order[[i]]))
-  grid_size1 = length(row_vars)
-  grid_size2 = length(col_vars)
+  grid_row = expand.grid(lapply(row_vars, function(i) value_order[[i]]))
+  grid_col = expand.grid(lapply(col_vars, function(i) value_order[[i]]))
   
-  browser()
-  all_combo_strings1 = apply(full_grid1, 1, paste, collapse = "")
-  combo_strings1 = apply(data_mat[,row_vars], 1, paste, collapse = "")
-  all_combo_strings2 = apply(full_grid2, 1, paste, collapse = "")
-  combo_strings2 = apply(data_mat[,col_vars], 1, paste, collapse = "")
+  axis1 = row.match(data_mat[,row_vars], grid_row)
+  axis2 = row.match(data_mat[,col_vars], grid_col)
   
-  grid_to_axis1 = rep(all_combo_strings1, length(all_combo_strings2))
-  grid_to_axis2 = rep(all_combo_strings2, each = length(all_combo_strings1))
+  bubble_size = matrix(NA, ncol = nrow(grid_row), nrow = nrow(grid_col))
+  bubble_color = matrix(NA, ncol = nrow(grid_row), nrow = nrow(grid_col))
   
-  axis1 = match(combo_strings1, all_combo_strings1)
-  axis2 = match(combo_strings2, all_combo_strings2)
-  has_NA = is.na(axis1) | is.na(axis2)
-  
-  bubble_size = matrix(NA, ncol = nrow(full_grid2), nrow = nrow(full_grid1))
-  bubble_color = matrix(NA, ncol = nrow(full_grid2), nrow = nrow(full_grid1))
-  
+  # only record in bubble size/color if there is no NA
   for (n in 1:length(axis1)) {
     if ((!is.na(axis1[[n]])) & (!is.na(axis2[[n]]))) {
-      bubble_size[matrix(c(axis1[[n]], axis2[[n]]), ncol = 2)] = response[[n]]
-      bubble_color[matrix(c(axis1[[n]], axis2[[n]]), ncol = 2)] = response[[n]]
+      bubble_size[matrix(c(axis2[[n]], axis1[[n]]), ncol = 2)] = response[[n]]
+      bubble_color[matrix(c(axis2[[n]], axis1[[n]]), ncol = 2)] = response[[n]]
     }
   }
   
-  return(list(bubble_color, bubble_size, col_vars, row_vars))
+  return(list(bubble_color, bubble_size, col_vars, row_vars, grid_col, grid_row, value_order))
   
 }

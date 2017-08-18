@@ -11,9 +11,9 @@ shinyServer(function(input, output, session) {
   
   #################### setup ####################
   
+  # get general inputs
   get_col_vars <- reactive({col_vars = rev(strsplit(input$col_vars, ",")[[1]])})
   get_row_vars <- reactive({rev(strsplit(input$row_vars, ",")[[1]])})
-  
   get_normalize <- reactive({input$normalize})
   get_log_data <- reactive({input$log_data})
   get_cex_col <- reactive({as.numeric(strsplit(input$cex_col, ",")[[1]])})
@@ -25,7 +25,7 @@ shinyServer(function(input, output, session) {
   get_var_label_size <- reactive({as.numeric(input$var_label_size)})
   get_color <- reactive({input$color})
   
-  # get data functions
+  # get data
   get_data_mat_file <- reactive({
     ifelse(is.null(input$data_mat_file), data_mat_file <- "experiment_variables.csv", data_mat_file <- input$data_mat_file$datapath)
   })
@@ -36,8 +36,12 @@ shinyServer(function(input, output, session) {
     ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
   })
   get_value_order <- reactive({
-    read_value_order = reactiveFileReader(1000, session, get_value_order_file(), readLines)
-    load_value_order(read_value_order())
+    if (input$value_order_check) {
+      read_value_order = reactiveFileReader(1000, session, get_value_order_file(), readLines)
+      load_value_order(read_value_order())
+    } else {
+      NULL
+    }
   })
   
   get_update <- reactive({input$update})
@@ -143,27 +147,10 @@ shinyServer(function(input, output, session) {
       width = return_list$width
       height = return_list$height
       
-      # store number form of outfile_format
-      outfile_format = as.numeric(input$outfile_format)
-      
-      # get figure print out function
-      figure_func_list = list("pdf" = pdf, "png" = png, "jpg" = jpeg, "bmp" = bmp)
-      figure_func <- figure_func_list[[outfile_format]]
-      
-      # pdf (single file with multi pages)
-      if (outfile_format == 1) { 
-        
-        pdf(paste(input$outfile, ".pdf", sep = ""), width = width, height = height, useDingbats = F)
-        master_dim_stack()
-        master_legend()
-        dev.off()
-        
-      } else { # png jpg and bmp
-        
-        figure_func(paste(input$outfile, ".", names(figure_func_list)[[as.numeric(input$outfile_format)]], sep = ""), width = width, height = height, units = "in", res = 300)
-        master_dim_stack()
-        dev.off()
-      }
+      pdf(paste(input$outfile, ".pdf", sep = ""), width = width, height = height, useDingbats = F)
+      master_dim_stack()
+      master_legend()
+      dev.off()
     })
   })
 })
