@@ -23,8 +23,8 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   grid_row = return_list[[6]]
   
   # initialize null parameters
-  if (length(cex_col)==0) {cex_col = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
-  if (length(cex_row)==0) {cex_row = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
+  if (length(cex_col)==0 | identical(cex_col, "default")) {cex_col = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
+  if (length(cex_row)==0 | identical(cex_row, "default")) {cex_row = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
   
   var_names = colnames(data_mat)
   names(var_names) = var_names

@@ -7,6 +7,12 @@ source("support_functions/make_dimensional_stacking.R")
 source("support_functions/make_legend.R")
 source("support_functions/load_value_order.R")
 
+list.of.packages <- c("shiny")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+library(shiny)
+
 shinyServer(function(input, output, session) {
   
   #################### setup ####################

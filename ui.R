@@ -1,11 +1,10 @@
 rm(list=ls())
 
-list.of.packages <- c("shiny", "gridExtra")
+list.of.packages <- c("shiny")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
 library(shiny)
-library(gridExtra)
 
 shinyUI(
   fluidPage(
@@ -25,6 +24,7 @@ shinyUI(
                  condition = "input.value_order_check == true",
                  fileInput("value_order_file", "Choose value order file")
                ),
+               textInput("outfile", "Choose output file name", value = "example_output", placeholder = "example_output"),
                actionButton("table_output", label = "Make table file"),
                actionButton("graph_output", label = "Make figure file")
              )
@@ -57,8 +57,8 @@ shinyUI(
                
                textInput("legend_title", label = "Legend title", value = "Legend title", placeholder = "Legend title"),
                
-               textInput("cex_col", label = "Column label sizes", value = "", placeholder = ""),
-               textInput("cex_row", label = "Row label sizes", value = "", placeholder = ""),
+               textInput("cex_col", label = "Column label sizes", value = "", placeholder = "default"),
+               textInput("cex_row", label = "Row label sizes", value = "", placeholder = "default"),
                
                numericInput("bubble_size_rescale", label = "Bubble size scaling factor", value = 1, min = 0, step = 0.05),
                numericInput("var_label_size", label = "Variable label size", value = 1, min = 0, step = 0.05),
