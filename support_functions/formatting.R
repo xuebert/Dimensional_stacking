@@ -38,14 +38,14 @@ formatting <- function(data_mat, response, col_vars, row_vars, value_order_obj) 
   }
   
   # create storage
-  grid_row = expand.grid(lapply(row_vars, function(i) value_order[[i]]))
+  grid_row = expand.grid(lapply(row_vars, function(i) rev(value_order[[i]])))
   grid_col = expand.grid(lapply(col_vars, function(i) value_order[[i]]))
   
-  axis1 = row.match(data_mat[,row_vars], grid_row)
-  axis2 = row.match(data_mat[,col_vars], grid_col)
+  axis2 = row.match(data_mat[,row_vars], grid_row)
+  axis1 = row.match(data_mat[,col_vars], grid_col)
   
-  bubble_size = matrix(NA, ncol = nrow(grid_row), nrow = nrow(grid_col))
-  bubble_color = matrix(NA, ncol = nrow(grid_row), nrow = nrow(grid_col))
+  bubble_size = matrix(NA, ncol = nrow(grid_col), nrow = nrow(grid_row))
+  bubble_color = matrix(NA, ncol = nrow(grid_col), nrow = nrow(grid_row))
   
   # only record in bubble size/color if there is no NA
   for (n in 1:length(axis1)) {

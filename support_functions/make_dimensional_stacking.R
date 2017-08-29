@@ -1,4 +1,4 @@
-make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = NULL, col_vars = NULL, value_order_obj = NULL, bubble_size_rescale = 1, cex_col = character(0), cex_row = character(0), color_scale = NULL, lwd = 1, var_label_size = 0.8, selected_color = "red", normalize = T, log_data = T, return_formatted_data = F) {
+make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = NULL, col_vars = NULL, value_order_obj = NULL, bubble_size_rescale = 1, cex_col = character(0), cex_row = character(0), lwd = 1, var_label_size = 0.8, selected_color = "red", normalize = T, log_data = T, diverge = F, return_formatted_data = F) {
   
   source("support_functions/bubble_chart.R")
   source("support_functions/formatting.R")
@@ -7,20 +7,38 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   return_list = load_data(data_mat_file, response_file)
   data_mat = return_list[[1]]
   response = return_list[[2]]
+  orig_range = range(response, na.rm = T)
   
   # response changes
-  if (log_data) {response[response > 0] = log10(response[response > 0] + 1)}
-  if (normalize) {response = response / max(response)}
+  if (log_data) {
+    response[response > 0] = log10(response[response > 0] + 1)
+    response[response < 0] = -log10(-response[response < 0] + 1)
+  }
+  if (normalize) {
+    max_value = max(abs(response))
+    response = response / max_value
+  }
+  if (diverge) {
+    response[response >= 0] = response[response >= 0] / 2 + 0.5
+    response[response < 0] = (response[response < 0] / 2) + 0.5
+    selected_color = "diverge"
+  }
   
   # format bubble_color and bubble_size.  Also sets defaults for col_vars and row_vars if they weren't specified
   return_list = formatting(data_mat, response, col_vars, row_vars, value_order_obj)
-  if (return_formatted_data) {return(return_list[[1]])}
+  if (return_formatted_data) {return(list(return_list[[1]], orig_range))}
   bubble_color = return_list[[1]]
   bubble_size = return_list[[2]]
   col_vars = return_list[[3]]
   row_vars = return_list[[4]]
   grid_col = return_list[[5]]
   grid_row = return_list[[6]]
+  
+  # if diverging, convert sizes properly
+  if (diverge) {
+    bubble_size[bubble_color < 0.5 & !is.na(bubble_color)] = bubble_size[bubble_color < 0.5 & !is.na(bubble_color)] * -2 + 1
+    bubble_size[bubble_color >= 0.5 & !is.na(bubble_color)] = (bubble_size[bubble_color >= 0.5 & !is.na(bubble_color)] - 0.5) * 2
+  }
   
   # initialize null parameters
   if (length(cex_col)==0 | identical(cex_col, "default")) {cex_col = seq(1, 0.4, length.out = max(c(length(row_vars), length(col_vars))))}
@@ -49,7 +67,7 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   plot(1, type = "n", xlab = "", ylab = "", main = "", ylim = c(0,nrow(bubble_color)), xlim = c(0,ncol(bubble_color)), bty = "n", axes = F)
   par(new = T)
   
-  p <- bubble_chart(bubble_colors = bubble_color, bubble_sizes = bubble_size * bubble_size_rescale, bty = "n", white_buffer = F, color_scale = color_scale, lwd = lwd, selected_color = selected_color)
+  p <- bubble_chart(bubble_colors = bubble_color, bubble_sizes = bubble_size * bubble_size_rescale, bty = "n", white_buffer = F, lwd = lwd, selected_color = selected_color)
   
   # get text placement
   get_placement <- function(labels, number_range = c(0, ncol(bubble_color))) {
@@ -100,7 +118,7 @@ make_dimensional_stacking <- function(data_mat_file, response_file, row_vars = N
   
   # make row information
   return_list = get_placement(labels = rev(lapply(grid_row, unique)), number_range = c(0,nrow(bubble_color)))
-  text_values = lapply(return_list[[1]], rev) # reverse order for row
+  text_values = return_list[[1]]
   coord_values = return_list[[2]]
   counter = 0
   for (n_level in length(return_list[[1]]):1) {

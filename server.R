@@ -22,6 +22,7 @@ shinyServer(function(input, output, session) {
   get_row_vars <- reactive({rev(strsplit(input$row_vars, ",")[[1]])})
   get_normalize <- reactive({input$normalize})
   get_log_data <- reactive({input$log_data})
+  get_diverge <- reactive({input$diverge})
   get_cex_col <- reactive({as.numeric(strsplit(input$cex_col, ",")[[1]])})
   get_cex_row <- reactive({as.numeric(strsplit(input$cex_row, ",")[[1]])})
   get_bubble_size_rescale <- reactive({as.numeric(input$bubble_size_rescale)})
@@ -71,6 +72,7 @@ shinyServer(function(input, output, session) {
           value_order_obj = get_value_order(),
           normalize = get_normalize(), 
           log_data = get_log_data(), 
+          diverge = get_diverge(),
           cex_col = get_cex_col(), 
           cex_row = get_cex_row(), 
           selected_color = get_color(), 
@@ -135,7 +137,7 @@ shinyServer(function(input, output, session) {
     return_list$legend_title = NULL # remove legend title
     return_list$width = NULL
     return_list$height = NULL
-    formatted_data = do.call(make_dimensional_stacking, return_list)
+    formatted_data = do.call(make_dimensional_stacking, return_list)[[1]]
     
     write.table(formatted_data, file = paste(get_outfile(), ".csv", sep = ""), sep = ",", quote = F, col.names = T)
   })

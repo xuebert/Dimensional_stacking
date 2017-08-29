@@ -43,6 +43,7 @@ shinyUI(
                textAreaInput("row_vars", "Choose variables in rows", "", width = "230px", height = "50px"),
                checkboxInput('normalize', 'Normalize response?', TRUE),
                checkboxInput('log_data', 'Log10 transform response?', FALSE),
+               checkboxInput('diverge', 'Diverging plot?', FALSE),
                
                br(),
                tags$head(tags$style(HTML('#update{background-color:lightgreen}'))),

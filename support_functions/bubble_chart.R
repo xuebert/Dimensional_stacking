@@ -1,4 +1,4 @@
-bubble_chart <- function(bubble_colors, bubble_sizes, color_scale = NULL, xlab = "", ylab = "", x_axis_opt = NULL, y_axis_opt = NULL, bty = NULL, white_buffer = T, lwd = 1, main = "", selected_color = "red") {
+bubble_chart <- function(bubble_colors, bubble_sizes, xlab = "", ylab = "", x_axis_opt = NULL, y_axis_opt = NULL, bty = NULL, white_buffer = T, lwd = 1, main = "", selected_color = "red") {
   # color_colors are assumed to be between 0-1 and linearly scale within color_scale
   # colors and sizes are assumed to be between 0-1 and linearly scale within color_scale_list
   load("support_functions/color_scale.RData")
