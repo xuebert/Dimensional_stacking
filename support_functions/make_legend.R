@@ -1,5 +1,8 @@
 make_legend <- function(list_args) {
   
+  # store original legend_title
+  legend_title = list_args$legend_title
+  
   # get dimension of bubble plot
   list_args$return_formatted_data = T
   list_args$legend_title = NULL # remove legend title
@@ -9,6 +12,8 @@ make_legend <- function(list_args) {
   num_col = ncol(return_list[[1]])
   num_row = nrow(return_list[[1]])
   orig_range = return_list[[2]]
+  
+  list_args$legend_title = legend_title
   
   legend_color = matrix(c(seq(0.01, 1, by = 0.1), 1), ncol = 11)
   legend_color = rbind(legend_color, matrix(rep(NA, 11 * (num_row - 1)), ncol = 11))
