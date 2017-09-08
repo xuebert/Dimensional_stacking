@@ -6,3 +6,4 @@ PeptideDensity:0,0.05
 OligoDensity:Low,High,VHigh
 Attachment:DOPE,Chol
 Sequence:0,1
+OligoConc:1,10,100,1000
