@@ -40,7 +40,7 @@ shinyServer(function(input, output, session) {
     ifelse(is.null(input$response_file), response_file <- "SEAP.csv", response_file <- input$response_file$datapath)
   })
   get_value_order_file <- reactive({
-    ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file)
+    ifelse(is.null(input$value_order_file), value_order_file <- "value_order_example.csv", value_order_file <- input$value_order_file$datapath)
   })
   get_value_order <- reactive({
     if (input$value_order_check) {
